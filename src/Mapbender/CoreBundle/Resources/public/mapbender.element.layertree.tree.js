@@ -69,6 +69,7 @@
         _createTree: function() {
             var self = this;
             var sources = this.model.getSources();
+            var $target = $("ul.layers:first", this.element);
             if (this.created)
                 this._unSortable();
             for (var i = (sources.length - 1); i > -1; i--) {
@@ -76,7 +77,7 @@
                     || (sources[i].configuration.isBaseSource && this.options.showBaseSource)) {
                     if (this.options.displaytype === "tree") {
                         var li_s = this._createSourceTree(sources[i], this.model.getScale());
-                        this._addNode(li_s, sources[i]);
+                        this._addNode($target, li_s, sources[i]);
                     } else {
                         return;
                     }
@@ -97,8 +98,7 @@
             $(document).bind('mbmapsourceremoved', $.proxy(self._onSourceRemoved, self));
             this.created = true;
         },
-        _addNode: function($toAdd, source) {
-            var $targetList = $("ul.layers:first", this.element);
+        _addNode: function($target, $toAdd, source) {
             if (this.options.useTheme) {
                 // Collect layerset <=> theme relations
                 // @todo 3.1.0: this should happen server-side
@@ -109,11 +109,11 @@
                         theme = item;
                 });
                 if (theme.useTheme) {
-                    var $layersetEl = this._createThemeNode(layerset, theme);
-                    $targetList = $("ul.layers:first", $layersetEl);
+                    var $layersetEl = this._createThemeNode($target, layerset, theme);
+                    $target = $("ul.layers:first", $layersetEl);
                 }
             }
-            $targetList.append($toAdd);
+            $target.append($toAdd);
         },
         _reset: function() {
             this._resetEvents();
@@ -236,14 +236,16 @@
             }
             return false;
         },
-        _createThemeNode: function(layerset, theme) {
-            var $li = $('ul.layers:first > li[data-layersetid="' + layerset.id + '"]', this.element);
+        _createThemeNode: function($scope, layerset, theme) {
+            var $li = $('>li[data-layersetid="' + layerset.id + '"]', $scope);
+            // var $li = $('ul.layers:first > li[data-layersetid="' + layerset.id + '"]', this.element);
             if ($li.length === 1) {
                 return $li;
-            } else {
-                $li = this.template.clone();
             }
-            $('ul.layers:first', this.element).append($li);
+
+            $li = this.template.clone();
+
+            $scope.append($li);
             $li.removeClass('hide-elm').addClass('toggleable');
             $li.attr('data-layersetid', layerset.id);
             $li.removeAttr('data-id');
