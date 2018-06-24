@@ -63,6 +63,7 @@
                 this.open();
             }
             this.element.removeClass('hidden');
+            $(document).bind('mblayertree-sync', this._handleSync.bind(this));
             this._trigger('ready');
             this._ready();
         },
@@ -1093,6 +1094,20 @@
             }
             this.readyState = true;
         },
+        _processSync: function(data, sender) {
+            var $other = $(sender.element);
+            console.log("Processing sync from other layertree", $other);
+        },
+        _handleSync: function(event, dataWrap) {
+            if (dataWrap.sender === this) {
+                return;
+            }
+            this._processSync(dataWrap.data, dataWrap.sender);
+        },
+        _sendSync: function(data) {
+            data.origin = this;
+            this._trigger('-sync', null, {sender: this, data: data});
+       },
         _findLayersetWithSource: function(source) {
             var layerset = null;
             Mapbender.Util.SourceTree.iterateLayersets(function(layersetDef, layersetId) {
