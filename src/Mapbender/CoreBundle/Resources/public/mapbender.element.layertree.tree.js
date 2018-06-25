@@ -57,8 +57,13 @@
             this.menuTemplate = $('#layer-menu', this.template).remove();
 
             this.model = $("#" + this.options.target).data("mapbenderMbMap").getModel();
+            this.$root = $('<ul>');
+            this.$root.addClass('layers').addClass('list-root');
+            this.$eventScope = $('<div>');
+            this.$eventScope.append(this.$root);
+            this._createTree(this.$root);
             if (this.options.type === 'element') {
-                this._createTree();
+                $('#list-root', this.element).replaceWith(this.$eventScope);
             } else if (this.options.type === 'dialog' && new Boolean(this.options.autoOpen).valueOf() === true) {
                 this.open();
             }
@@ -67,10 +72,10 @@
             this._trigger('ready');
             this._ready();
         },
-        _createTree: function() {
+        _createTree: function($target) {
             var self = this;
             var sources = this.model.getSources();
-            var $target = $("ul.layers:first", this.element);
+            $target = $target || $("ul.layers:first", this.element);
             if (this.created)
                 this._unSortable();
             for (var i = (sources.length - 1); i > -1; i--) {
@@ -89,7 +94,7 @@
                 }
             }
 
-            this._reset();
+            this._reset(this.$eventScope);
 
             $(document).bind('mbmapsourceloadstart', $.proxy(self._onSourceLoadStart, self));
             $(document).bind('mbmapsourceloadend', $.proxy(self._onSourceLoadEnd, self));
@@ -116,54 +121,50 @@
             }
             $target.append($toAdd);
         },
-        _reset: function() {
-            this._resetEvents();
-            this._resetSortable();
-            this._resetCheckboxes();
-            this._setSourcesCount();
+        _reset: function($scope) {
+            this._resetEvents($scope);
+            this._resetSortable($scope);
+            this._resetCheckboxes($scope);
+            this._setSourcesCount($scope);
         },
-        _createEvents: function() {
+        _createEvents: function($scope) {
             var self = this;
-            this.element.on('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
-            this.element.on('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
-            this.element.on('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
-            this.element.on('click', '.iconFolder', $.proxy(self._toggleContent, self));
-            this.element.on('click', '#delete-all', $.proxy(self._removeAllSources, self));
-            this.element.on('click', '.layer-menu-btn', $.proxy(self._toggleMenu, self));
-            this.element.on('click', '.selectAll', $.proxy(self._selectAll, self));
+            $scope.on('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
+            $scope.on('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
+            $scope.on('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
+            $scope.on('click', '.iconFolder', $.proxy(self._toggleContent, self));
+            $scope.on('click', '#delete-all', $.proxy(self._removeAllSources, self));
+            $scope.on('click', '.layer-menu-btn', $.proxy(self._toggleMenu, self));
+            $scope.on('click', '.selectAll', $.proxy(self._selectAll, self));
         },
-        _removeEvents: function() {
+        _removeEvents: function($scope) {
             var self = this;
-            this.element.off('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
-            this.element.off('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
-            this.element.off('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
-            this.element.off('click', '.iconFolder', $.proxy(self._toggleContent, self));
-            this.element.off('click', '#delete-all', $.proxy(self._removeAllSources, self));
-            this.element.off('click', '.layer-menu-btn', $.proxy(self._toggleMenu, self));
-            this.element.off('click', '.selectAll', $.proxy(self._selectAll, self));
+            $scope.off('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
+            $scope.off('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
+            $scope.off('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
+            $scope.off('click', '.iconFolder', $.proxy(self._toggleContent, self));
+            $scope.off('click', '#delete-all', $.proxy(self._removeAllSources, self));
+            $scope.off('click', '.layer-menu-btn', $.proxy(self._toggleMenu, self));
+            $scope.off('click', '.selectAll', $.proxy(self._selectAll, self));
 
         },
-        _resetEvents: function() {
-            this._removeEvents();
-            this._createEvents();
+        _resetEvents: function($scope) {
+            this._removeEvents($scope);
+            this._createEvents($scope);
         },
-        _resetCheckboxes: function() {
+        _resetCheckboxes: function($scope) {
             var self = this;
-            this.element.off('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
-            this.element.off('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
-            this.element.off('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
-            this.element.on('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
-            this.element.on('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
-            this.element.on('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
-            if (initCheckbox) {
-                $('.checkbox', self.element).each(function() {
-                    initCheckbox.call(this);
-                });
-            }
+            $scope.off('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
+            $scope.off('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
+            $scope.off('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
+            $scope.on('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
+            $scope.on('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
+            $scope.on('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
+            $('input[type=checkbox]', $scope).mbCheckbox();
         },
-        _resetSortable: function() {
+        _resetSortable: function($scope) {
             this._unSortable();
-            this._createSortable();
+            this._createSortable($scope);
         },
         _unSortable: function() {
         },
@@ -193,15 +194,15 @@
          * @private
          */
         _updateSourceOrder: function() {
-            var $roots = $('ul.layers li[data-type="root"]', this.element);
+            var $roots = $('ul.layers li[data-type="root"]', this.$eventScope);
             var sourceIds = $roots.map(function() {
                 return $(this).attr('data-sourceid');
             }).get().reverse();
             this.model.reorderSources(sourceIds);
         },
-        _createSortable: function() {
+        _createSortable: function($scope) {
             var self = this;
-            $("ul.layers", this.element).each(function() {
+            $("ul.layers", $scope).each(function() {
                 $(this).sortable({
                     axis: 'y',
                     items: "> li:not(.notreorder)",
@@ -239,7 +240,6 @@
         },
         _createThemeNode: function($scope, layerset, theme) {
             var $li = $('>li[data-layersetid="' + layerset.id + '"]', $scope);
-            // var $li = $('ul.layers:first > li[data-layersetid="' + layerset.id + '"]', this.element);
             if ($li.length === 1) {
                 return $li;
             }
@@ -369,11 +369,11 @@
             }
             if (this.options.displaytype === "tree") {
                 var li_s = this._createSourceTree(added.source, this.model.getScale());
-                var first_li = $(this.element).find('ul.layers:first li:first');
+                var first_li = this.$eventScope.find('ul.layers:first li:first');
                 if (first_li && first_li.length !== 0) {
                     first_li.before(li_s);
                 } else {
-                    $(this.element).find('ul.layers:first').append($(li_s));
+                    this.$eventScope.find('ul.layers:first').append($(li_s));
                 }
             } else {
                 return;
@@ -381,7 +381,7 @@
             this.sourceAtTree[added.source.id ] = {
                 id: added.source.id
             };
-            this._reset();
+            this._reset(this.$eventScope);
         },
         _onSourceChanged: function(event, options) {
             if (options.changed && options.changed.children) {
@@ -422,24 +422,41 @@
                 $li.addClass("invisible").find('span.layer-state').attr("title", "");
             }
         },
+        _redisplayLayerOptions: function($li, options) {
+            var $local = $('.leaveContainer:first', $li);
+            var $chkSelected = $('input[name="selected"]', $local);
+            var $chkInfo = $('input[name="info"]', $local);
+            var selected = options.selected;
+            var info = options.info;
+            var allowSelected = options.allow && options.allow.selected;
+            if (typeof selected !== 'undefined') {
+                $chkSelected.prop('checked', selected);
+            }
+            if (typeof allowSelected !== 'undefined') {
+                $chkSelected.prop('disabled', !allowSelected);
+            }
+            if (typeof info !== 'undefined') {
+                $chkInfo.prop('checked', info);
+            }
+            $('input[type="checkbox"]', $local).mbCheckbox();
+        },
         _resetSourceAtTree: function(source) {
-            // console.warn("Skipping _resetSourceAtTree call"); return;
             var self = this;
-            function resetSourceAtTree(layer, parent) {
-                var $li = $('li[data-id="' + layer.options.id + '"]', self.element);
+            function resetSourceAtTree(layer, $scope) {
+                var $li = $('li[data-id="' + layer.options.id + '"]', $scope);
                 self._redisplayLayerState($li, layer.state);
                 if (layer.children) {
                     for (var i = 0; i < layer.children.length; i++) {
-                        resetSourceAtTree(layer.children[i], layer);
+                        resetSourceAtTree(layer.children[i], $scope);
                     }
                 }
             }
-            resetSourceAtTree(source.configuration.children[0], null);
+            resetSourceAtTree(source.configuration.children[0], this.$eventScope);
         },
         _changeChildren: function(changed) {
             if (changed.children) {
                 for (var layerId in changed.children) {
-                    var $li = $('li[data-id="' + layerId + '"]', this.element);
+                    var $li = $('li[data-id="' + layerId + '"]', this.$eventScope);
                     if ($li.length !== 0) {
                         if ($li.attr("data-type") === this.consts.root && !this._isThemeChecked($li)){
                             continue;
@@ -447,37 +464,28 @@
                         if (changed.children[layerId].state) {
                             this._redisplayLayerState($li, changed.children[layerId].state);
                         }
-                        if (changed.children[layerId].options) {
-                            if(changed.children[layerId].options.treeOptions.allow){
-                                if(changed.children[layerId].options.treeOptions.allow.selected === true){
-                                    var chk_selected = $('input[name="selected"]:first', $li);
-                                    chk_selected.prop('disabled', false);
-                                    $li.removeClass('invisible');
-                                    initCheckbox.call(chk_selected);
-                                } else if(changed.children[layerId].options.treeOptions.allow.selected === false){
-                                    var chk_selected = $('input[name="selected"]:first', $li);
-                                    chk_selected.prop('disabled', true);
-                                    $li.addClass('invisible');
-                                    initCheckbox.call(chk_selected);
-                                }
-                            }
+                        if (changed.children[layerId].options && changed.children[layerId].options.treeOptions) {
+                            this._redisplayLayerOptions($li, changed.children[layerId].options.treeOptions);
                         }
+                        $('.leaveContainer input[type="checkbox"]', $li).mbCheckbox();
                     }
                 }
             }
         },
         _removeChild: function(changed) {
-            var self = this;
             if (changed && changed.sourceIdx && changed.childRemoved) {
-                $('ul.layers:first li[data-id="' + changed.childRemoved.layer.options.id + '"]', self.element).
+                $('ul.layers:first li[data-id="' + changed.childRemoved.layer.options.id + '"]', this.$eventScope).
                     remove();
             }
         },
+        _sourceNodeById: function(sourceId) {
+            return $('li[data-sourceid="' + sourceId + '"][data-type="root"]', this.$eventScope);
+        },
         _onSourceRemoved: function(event, removed) {
             if (removed && removed.source && removed.source.id) {
-                var $source = $('ul.layers:first li[data-sourceid="' + removed.source.id + '"]', this.element);
+                var $source = this._sourceNodeById(removed.source.id);
                 var $theme = $source.parents('.themeContainer:first');
-                $('ul.layers:first li[data-sourceid="' + removed.source.id + '"]', this.element).remove();
+                $source.remove();
                 if ($theme.length && $theme.find('.serviceContainer').length === 0){
                     $theme.remove();
                 }
@@ -487,27 +495,27 @@
         _onSourceLoadStart: function(event, options) {
             if (options.source && this.sourceAtTree[options.source.id ]) {
                 this.loadStarted[options.source.id ] = true;
-                var source_li = $('li[data-sourceid="' + options.source.id + '"][data-type="root"]', this.element);
-                if (options.source.configuration.children[0].options.treeOptions.selected && !source_li.hasClass(
+                var $source = this._sourceNodeById(options.source.id);
+                if (options.source.configuration.children[0].options.treeOptions.selected && !$source.hasClass(
                     'invisible')) {
-                    source_li.attr('data-state', 'loading').find('span.layer-state:first').attr("title",
-                        source_li.attr('data-title'));
+                    $source.attr('data-state', 'loading').find('span.layer-state:first').attr("title",
+                        $source.attr('data-title'));
                 }
             }
         },
         _onSourceLoadEnd: function(event, option) {
-            if (option.source && this.sourceAtTree[option.source.id ] && this.loadStarted[option.source.id]) {
+            if (option.source && this.sourceAtTree[option.source.id] && this.loadStarted[option.source.id]) {
+                var $source = this._sourceNodeById(option.source.id);
                 this.loadStarted[option.source.id] = false;
-                var source_li = $('li[data-sourceid="' + option.source.id + '"][data-type="root"]', this.element);
-                source_li.attr('data-state', '');
+                $source.attr('data-state', '');
                 this._resetSourceAtTree(option.source);
             }
         },
         _onSourceLoadError: function(event, option) {
             if (option.source && this.sourceAtTree[option.source.id ] && this.loadStarted[option.source.id]) {
                 this.loadStarted[option.source.id] = false;
-                var source_li = $('li[data-sourceid="' + option.source.id + '"][data-type="root"]', this.element);
-                source_li.attr('data-state', 'error').find('span.layer-title:first').attr("title",
+                var $source = this._sourceNodeById(options.source.id);
+                $source.attr('data-state', 'error').find('span.layer-title:first').attr("title",
                     option.error.details);
             }
         },
@@ -828,7 +836,6 @@
                         inpchkbox.on('change', function(e) {
                             self._callDimension(source, $(e.target));
                         });
-                        initCheckbox.call(inpchkbox);
                         title.attr('title', title.attr('title') + ' ' + item.name);
                         title.attr('id', title.attr('id') + item.name);
                         chkbox.after(title);
@@ -1025,7 +1032,6 @@
             if (this.options.type === 'dialog') {
                 var self = this;
                 if (!this.popup || !this.popup.$element) {
-                    this._createTree();
                     this.popup = new Mapbender.Popup2({
                         title: self.element.attr('data-title'),
                         modal: false,
@@ -1033,11 +1039,11 @@
                         draggable: true,
                         closeButton: false,
                         closeOnESC: false,
-                        content: [self.element.show()],
+                        content: [this.$eventScope],
                         destroyOnClose: true,
                         width: 350,
                         height: 500,
-                        cssClass: 'customLayertree',
+                        cssClass: 'customLayertree  mb-element-layertree',
                         buttons: {
                             'ok': {
                                 label: Mapbender.trans("mb.core.layertree.popup.btn.ok"),
@@ -1048,10 +1054,10 @@
                             }
                         }
                     });
-                    this._reset();
+                    this._reset(this.$eventScope);
                     this.popup.$element.on('close', $.proxy(this.close, this));
                 } else {
-                    this._reset();
+                    this._reset(this.$eventScope);
                     this.popup.open();
                 }
             }
@@ -1096,7 +1102,8 @@
         },
         _processSync: function(data, sender) {
             var $other = $(sender.element);
-            console.log("Processing sync from other layertree", $other);
+            // @todo: do it. This allows removal of the entire mbsourcechanged event machinery
+            // console.log("Processing sync from other layertree", $other);
         },
         _handleSync: function(event, dataWrap) {
             if (dataWrap.sender === this) {
