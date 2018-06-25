@@ -193,12 +193,16 @@
          *
          * @private
          */
-        _updateSourceOrder: function() {
-            var $roots = $('ul.layers li[data-type="root"]', this.$eventScope);
-            var sourceIds = $roots.map(function() {
+        _updateSourceOrder: function($scope) {
+            var $siblings = $('li.leave[data-type="root"]', $scope);
+            var sourceIds = $siblings.map(function() {
                 return $(this).attr('data-sourceid');
             }).get().reverse();
             this.model.reorderSources(sourceIds);
+            this._sendSync({
+                type: 'sourceorder',
+                order: sourceIds
+            });
         },
         _createSortable: function($scope) {
             var self = this;
@@ -214,7 +218,7 @@
                         switch (type) {
                             case 'theme':
                             case 'root':
-                                self._updateSourceOrder();
+                                self._updateSourceOrder($elm.closest('ul', self.$root));
                                 break;
                             case 'simple':
                             case 'group':
@@ -1100,19 +1104,56 @@
             }
             this.readyState = true;
         },
+        _processSyncReorder: function(newOrder) {
+            for (var i = 0; i < newOrder.length; ++i) {
+                var sourceId = newOrder[i];
+                var $source = $('.leave[data-type="root"][data-sourceid="' + sourceId + '"]', this.$root);
+                if (!$source.length) {
+                    console.warn("Could not find source, aborting reorder sync", sourceId, newOrder);
+                    throw new Error("Could not find source, aborting sync");
+                }
+                var $list = $source.closest('ul', this.$root);
+                var currentIndex = $source.index();
+                if (currentIndex !== i) {
+                    console.log("Moving source index", $source, currentIndex, i);
+                    var node = $source.detach();
+                    // reinsert at index, see https://stackoverflow.com/a/3562533
+                    // extended to support empty list (zero siblings)
+                    if (i === 0) {
+                        $list.prepend(node);
+                    } else {
+                        var $next = $(">:nth-child(" + (i) + ")", $list);
+                        if ($next.get().length) {
+                            $next.before(node);
+                        } else {
+                            $list.append(node);
+                        }
+                    }
+                }
+            }
+        },
         _processSync: function(data, sender) {
             var $other = $(sender.element);
+            switch (data.type) {
+                case 'sourceorder':
+                    this._processSyncReorder(data.order.slice());
+                    break;
+                default:
+                    console.warn("Unhandled mblayertree-sync event payload", data);
+            }
             // @todo: do it. This allows removal of the entire mbsourcechanged event machinery
             // console.log("Processing sync from other layertree", $other);
         },
         _handleSync: function(event, dataWrap) {
             if (dataWrap.sender === this) {
+                console.log("Ignoring sync!", $(this.element).attr('id'), $(dataWrap.sender.element).attr('id'));
                 return;
             }
+            console.log("Processing sync!", $(this.element).attr('id'), $(dataWrap.sender.element).attr('id'));
             this._processSync(dataWrap.data, dataWrap.sender);
         },
         _sendSync: function(data) {
-            data.origin = this;
+            data.sender = this;
             this._trigger('-sync', null, {sender: this, data: data});
        },
         _findLayersetWithSource: function(source) {
