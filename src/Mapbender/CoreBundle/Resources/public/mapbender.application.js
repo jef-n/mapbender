@@ -118,7 +118,7 @@ Mapbender.setup = function(){
             console.error("Element " + id + " failed to initialize:", e.message);
             if (Mapbender.configuration.application.debug) {
                 // Log original stack trace (clickable in Chrome, unfortunately not in Firefox) separately
-                console.log(e.stack);
+                throw e;
             }
             $.notify('Your element with id ' + id + ' (widget ' + data.init + ') failed to initialize properly.', 'error');
         }
