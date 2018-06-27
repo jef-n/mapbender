@@ -40,15 +40,20 @@ window.Mapbender.SourceModelOl4 = (function() {
             // this property is modified by initLayers_
             // after initLayers, we logical-AND it with the root layer setting
             queryable: false,
-            tiled: config.configuration.options.tiled || false
+            tiled: config.configuration.options.tiled || false,
+            title: config.title || rootLayerDef.options.title || rootLayerDef.options.name
         };
 
         this.getMapParams = {
-            VERSION: config.configuration.options.version || "1.1.1",
+            // monkey-patching the projection DOES NOT apply reordered axes!
+            VERSION: "1.1.1", //config.configuration.options.version || "1.1.1",
             FORMAT: config.configuration.options.format || 'image/png',
             TRANSPARENT: (config.configuration.options.transparent || true) ? "TRUE" : "FALSE",
             LAYERS: ""
         };
+        if (config.configuration.options.version && config.configuration.options.version !== this.getMapParams['PARAMS']) {
+            console.warn("VERSION parameter has been rewritten for compatibility", this.options.title, this.getMapParams['VERSION']);
+        }
         this.featureInfoParams = {
             MAX_FEATURE_COUNT: 1000,
             INFO_FORMAT: config.configuration.options.info_format || 'text/html',
@@ -89,6 +94,16 @@ window.Mapbender.SourceModelOl4 = (function() {
             throw new Error("Source: engine layer already assigned, runtime changes not allowed");
         }
         this.engineLayer_ = engineLayer;
+    };
+
+    Source.prototype.updateSrs = function(proj) {
+        var oldProj = this.engineLayer_.getSource().projection_;
+        console.warn("Replacing old proj with new proj", [oldProj, proj]);
+        this.engineLayer_.getSource().projection_ = proj;
+    };
+
+    Source.prototype.getTitle = function getTitle() {
+        return this.options.title;
     };
 
     /**
