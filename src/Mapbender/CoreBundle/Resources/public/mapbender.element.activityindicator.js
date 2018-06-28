@@ -23,7 +23,7 @@
                 if (element.init === 'mapbender.mbMap') {
                     widget.targets[id] = false;
 
-                    if (!Mapbender.checkTarget("mbActivityIndicator", id)) {
+                    if (!Mapbender.checkTarget('mbActivityIndicator', id)) {
                         return;
                     }
 
