@@ -14,14 +14,13 @@
         targets: [],
 
         _create: function () {
+            console.log('mapbender.mbActivityIndicator');
             var widget = this;
 
-            Object.entries(Mapbender.configuration.elements).map((entry) => {
-            //Object.keys(Mapbender.configuration.elements).forEach(function(entry) {
-                console.log(entry);
+            Object.keys(Mapbender.configuration.elements).forEach(function(entry) {
 
-                var element = entry.pop();
-                var id = entry.pop();
+                var element = Mapbender.configuration.elements[entry];
+                var id = entry;
 
                 if (element.init === 'mapbender.mbMap') {
                     widget.targets[id] = false;
