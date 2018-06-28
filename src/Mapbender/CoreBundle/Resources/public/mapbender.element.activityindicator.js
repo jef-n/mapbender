@@ -1,13 +1,12 @@
 (function ($) {
     'use strict';
 
-    $.widget("mapbender.mbActivityIndicator", $.mapbender.mbBaseElement, {
+    $.widget('mapbender.mbActivityIndicato', $.mapbender.mbBaseElement, {
         options: {
             activityClass: 'mb-activity',
             ajaxActivityClass: 'mb-activity-ajax',
             titleActivityClass: 'mb-activity-tile'
         },
-
         elementUrl: null,
         ajaxActivity: false,
         tileActivity: false,
@@ -17,9 +16,9 @@
         _create: function () {
             var widget = this;
 
-            Object.entries(Mapbender.configuration.elements).map(function (entry) {
-                var element = entry.pop(),
-                    id = entry.pop();
+            Object.keys(Mapbender.configuration.elements).forEach(function(entry) {
+                var element = entry.pop();
+                var id = entry.pop();
 
                 if (element.init === 'mapbender.mbMap') {
                     widget.targets[id] = false;
@@ -32,11 +31,27 @@
                 }
             });
 
+            /*
+            Object.entries(Mapbender.configuration.elements).map(function (entry) {
+                var element = entry.pop();
+                var id = entry.pop();
+
+                if (element.init === 'mapbender.mbMap') {
+                    widget.targets[id] = false;
+
+                    if (!Mapbender.checkTarget("mbActivityIndicator", id)) {
+                        return;
+                    }
+
+                    Mapbender.elementRegistry.onElementReady(id, $.proxy(widget._setup, widget, id));
+                }
+            });
+            */
         },
 
         _setup: function (id) {
-            var widget = this,
-                allInitiated = $.inArray(false, this.targets) >= 0;
+            var widget = this;
+            var allInitiated = $.inArray(false, this.targets) >= 0;
 
             $('#' + id).each(function () {
                 var mqMap = $(this).data('mapbenderMbMap').map;
@@ -108,10 +123,10 @@
          * Update body classes to match current activity
          */
         _updateBodyClass: function () {
-            var $body = $('body'),
-                hasAjaxClass = $body.hasClass(this.options.ajaxActivityClass),
-                hasTileClass = $body.hasClass(this.options.titleActivityClass),
-                hasActivityClass = $body.hasClass(this.options.activityClass);
+            var $body = $('body');
+            var hasAjaxClass = $body.hasClass(this.options.ajaxActivityClass);
+            var hasTileClass = $body.hasClass(this.options.titleActivityClass);
+            var hasActivityClass = $body.hasClass(this.options.activityClass);
 
             if (this.ajaxActivity !== hasAjaxClass) {
                 $body.toggleClass(this.options.ajaxActivityClass);
