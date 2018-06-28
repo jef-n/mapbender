@@ -30,23 +30,6 @@
                     Mapbender.elementRegistry.onElementReady(id, $.proxy(widget._setup, widget, id));
                 }
             });
-
-            /*
-            Object.entries(Mapbender.configuration.elements).map(function (entry) {
-                var element = entry.pop();
-                var id = entry.pop();
-
-                if (element.init === 'mapbender.mbMap') {
-                    widget.targets[id] = false;
-
-                    if (!Mapbender.checkTarget("mbActivityIndicator", id)) {
-                        return;
-                    }
-
-                    Mapbender.elementRegistry.onElementReady(id, $.proxy(widget._setup, widget, id));
-                }
-            });
-            */
         },
 
         _setup: function (id) {
