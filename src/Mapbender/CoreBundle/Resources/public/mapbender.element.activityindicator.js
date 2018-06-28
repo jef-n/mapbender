@@ -1,7 +1,7 @@
 (function ($) {
     'use strict';
 
-    $.widget('mapbender.mbActivityIndicato', $.mapbender.mbBaseElement, {
+    $.widget('mapbender.mbActivityIndicator', $.mapbender.mbBaseElement, {
         options: {
             activityClass: 'mb-activity',
             ajaxActivityClass: 'mb-activity-ajax',
@@ -16,7 +16,10 @@
         _create: function () {
             var widget = this;
 
-            Object.keys(Mapbender.configuration.elements).forEach(function(entry) {
+            Object.entries(Mapbender.configuration.elements).map((entry) => {
+            //Object.keys(Mapbender.configuration.elements).forEach(function(entry) {
+                console.log(entry);
+
                 var element = entry.pop();
                 var id = entry.pop();
 
