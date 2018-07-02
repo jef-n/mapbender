@@ -24,11 +24,12 @@ $.widget("mapbender.mbZoomBar", {
 
     _setup: function() {
         this.mapDiv = $('#' + this.options.target);
-        this.map = this.mapDiv.data('mapbenderMbMap').map.olMap;
+        this.map = this.mapDiv.data('mapbenderMbMap');
+        this.model = this.mapDiv.data('mapbenderMbMap').model;
         this._setupSlider();
         this._setupZoomButtons();
-        this._setupPanButtons();
-        this.map.events.register('zoomend', this, this._zoom2Slider);
+       // this._setupPanButtons();
+        this.model.onChangeResolution(this._zoom2Slider.bind(this));
         this._zoom2Slider();
 
         if(this.options.draggable === true) {
@@ -55,13 +56,12 @@ $.widget("mapbender.mbZoomBar", {
         this.zoomslider = this.element.find('.zoomSlider .zoomSliderLevels')
             .hide()
             .empty();
-
-        var levelsNumber = this.map.getNumZoomLevels();
-        for(var i = 0; i < levelsNumber; i++) {
-            var resolution = this.map.getResolutionForZoom(levelsNumber - i - 1);
-            var scale = Math.round(OpenLayers.Util.getScaleFromResolution(resolution, this.map.units));
-            this.zoomslider.append($('<li class="iconZoomLevel" title="1:' + scale + '"/>'));
-        }
+        var model = this.model;
+        console.log(this.map.options.scales.reverse);
+        _.each(this.map.options.scales.reverse(), function(value, index, list){
+            console.log(index);
+            this.zoomslider.append($('<li class="iconZoomLevel" title="1:' + value + '"/>').data('value',value));
+        }.bind(this));
 
         this.zoomslider.find('li').last()
             .addClass('iconZoomLevelSelected')
@@ -81,13 +81,13 @@ $.widget("mapbender.mbZoomBar", {
             });
         this.zoomslider.show();
 
-        var self = this;
+
         this.zoomslider.find('li').click(function() {
-            var li = $(this);
-            var index = li.index();
-            var position = self.map.getNumZoomLevels() - 1 - index;
-            self.map.zoomTo(position);
-        });
+            var $li = $(event.target);
+            var value = $li.data("value");
+            model.setScale(value);
+
+        }.bind(this));
     },
 
     _click: function(call) {
@@ -101,26 +101,14 @@ $.widget("mapbender.mbZoomBar", {
     _setupZoomButtons: function() {
         var self = this;
 
-        this.navigationHistoryControl =
+       /* this.navigationHistoryControl =
             new OpenLayers.Control.NavigationHistory();
-        this.map.addControl(this.navigationHistoryControl);
+        this.map.addControl(this.navigationHistoryControl); */
 
-        this.zoomBoxControl = new OpenLayers.Control();
-        OpenLayers.Util.extend(this.zoomBoxControl, {
-            handler: null,
-            autoActivate: false,
+        this.model.createDragZoom();
 
-            draw: function() {
-                this.handler = new OpenLayers.Handler.Box(this, {
-                    done: $.proxy(self._zoomToBox, self) }, {
-                    keyMask: OpenLayers.Handler.MOD_NONE});
-            },
 
-            CLASS_NAME: 'Mapbender.Control.ZoomBox',
-            displayClass: 'MapbenderControlZoomBox'
-        });
 
-        this.map.addControl(this.zoomBoxControl);
         this.element.find('.zoomBox').bind('click', function() {
             $(this).toggleClass('activeZoomIcon');
             if($(this).hasClass('activeZoomIcon')) {
@@ -200,12 +188,12 @@ $.widget("mapbender.mbZoomBar", {
      * Set slider to reflect map zoom level
      */
     _zoom2Slider: function() {
-        var position = this.map.getNumZoomLevels() - 1 - this.map.getZoom();
+        var scale = this.model.getScale(72);
 
         this.zoomslider.find('.iconZoomLevelSelected')
             .removeClass('iconZoomLevelSelected')
             .empty();
-        this.zoomslider.find('li').eq(position)
+        this.zoomslider.find('li[title="1:'+scale+'"]')
             .addClass('iconZoomLevelSelected')
             .append($('<div></div>'));
     },

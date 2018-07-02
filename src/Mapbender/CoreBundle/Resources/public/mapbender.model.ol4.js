@@ -1438,3 +1438,29 @@ Mapbender.Model.convertResolution_ = function convertResolution_(fromUnits, toUn
 };
 // make available on instance
 Mapbender.Model.prototype.convertResolution_ = Mapbender.Model.convertResolution_;
+
+Mapbender.Model.prototype.onChangeResolution =  function onChangeResolution(callback,context){
+    'use strict';
+    context = context || this;
+    this.map.getView().on('change:resolution',callback.bind(this))
+
+};
+
+Mapbender.Model.prototype.createDragZoom =  function createDragZoom(options){
+    'use strict';
+    var dragQueen = new  ol.interaction.DragZoom({
+        condition: function(e) {
+            if(e.modifierKey && e.modifierKey === 'Shift'){
+                return true;
+            } else {
+                return false;
+            }
+        }
+    });
+    this.map.addInteraction(dragQueen);
+    console.log('Drag');
+
+};
+
+
+
