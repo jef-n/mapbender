@@ -126,7 +126,7 @@
             this.element.on('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
             this.element.on('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
             this.element.on('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
-            this.element.on('click', '.iconFolder', $.proxy(self._toggleContent, self));
+            this.element.on('click', '.iconFolder, .layer-title', $.proxy(self._toggleContent, self));
             this.element.on('click', '#delete-all', $.proxy(self._removeAllSources, self));
             this.element.on('click', '.layer-menu-btn', $.proxy(self._toggleMenu, self));
             this.element.on('click', '.selectAll', $.proxy(self._selectAll, self));
@@ -136,7 +136,7 @@
             this.element.off('change', 'input[name="sourceVisibility"]', $.proxy(self._toggleSourceVisibility, self));
             this.element.off('change', 'input[name="selected"]', $.proxy(self._toggleSelected, self));
             this.element.off('change', 'input[name="info"]', $.proxy(self._toggleInfo, self));
-            this.element.off('click', '.iconFolder', $.proxy(self._toggleContent, self));
+            this.element.off('click', '.iconFolder, .layer-title', $.proxy(self._toggleContent, self));
             this.element.off('click', '#delete-all', $.proxy(self._removeAllSources, self));
             this.element.off('click', '.layer-menu-btn', $.proxy(self._toggleMenu, self));
             this.element.off('click', '.selectAll', $.proxy(self._selectAll, self));
