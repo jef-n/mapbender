@@ -578,6 +578,10 @@
         },
         _toggleContent: function(e) {
             var $me = $(e.target);
+            if ($me.hasClass('layer-title')) {
+                $me = $me.siblings('span.iconFolder:first');
+            }
+
             var $parent = $me.parents('li:first');
             if (!$parent.hasClass('toggleable'))
                 return false;
